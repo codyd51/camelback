@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
 import unittest
+from typing import List, Dict
 
 
-from camelback.case_converter import CaseStyleEnum, CaseConverter
+from camelback.case_converter import CaseStyleEnum, case_convert_to_style, case_convert_stream, case_convert, get_casing_style
 
 
 class TestCaseConversion(unittest.TestCase):
@@ -24,8 +25,7 @@ class TestCaseConversion(unittest.TestCase):
         with open(TestCaseConversion.SNAKE_CASE_FILE) as f:
             original_stream = f.read()
         # If I convert it to snake case
-        converter = CaseConverter(original_stream)
-        converted_stream = converter.convert(CaseStyleEnum.SNAKE_CASE)
+        converted_stream = case_convert_stream(original_stream, CaseStyleEnum.SNAKE_CASE)
         # Then I should get a stream identical to the input file
         self.assertEqual(original_stream, converted_stream)
 
@@ -34,8 +34,7 @@ class TestCaseConversion(unittest.TestCase):
         with open(TestCaseConversion.SNAKE_CASE_FILE) as f:
             original_stream = f.read()
         # If I convert it to macro case
-        converter = CaseConverter(original_stream)
-        converted_stream = converter.convert(CaseStyleEnum.MACRO_CASE)
+        converted_stream = case_convert_stream(original_stream, CaseStyleEnum.MACRO_CASE)
         # Then I should get a stream identical to the input file in macro case
         with open(TestCaseConversion.MACRO_CASE_FILE) as f:
             expected_stream = f.read()
@@ -45,16 +44,34 @@ class TestCaseConversion(unittest.TestCase):
         for correct_style, tokens in TestCaseConversion.STYLES.items():
             for token in tokens:
                 print(correct_style, token)
-                self.assertEqual(correct_style, CaseConverter.get_casing_style(token))
+                self.assertEqual(correct_style, get_casing_style(token))
 
-    def test_convert_case(self):
-        for from_style, original_tokens in TestCaseConversion.STYLES.items():
-            for to_style, correct_tokens in TestCaseConversion.STYLES.items():
+    def _test_case_convert_across_set(self, case_set: Dict[CaseStyleEnum, List[str]]):
+        for from_style, original_tokens in case_set.items():
+            for to_style, correct_tokens in case_set.items():
                 for i, original_token in enumerate(original_tokens):
                     correct_token = correct_tokens[i]
-
-                    print(f'{original_token} to {to_style.name}. Expect {correct_token}, got ', end='')
-                    converted_token = CaseConverter.convert_style(original_token, from_style, to_style)
-                    print(converted_token)
+                    print(f'{original_token} -> {to_style.name} yes {correct_token} got ', end='')
+                    converted_token = case_convert(original_token, to_style)
+                    print(f'{converted_token}')
 
                     self.assertEqual(correct_token, converted_token)
+
+    def test_case_convert_common(self):
+        self._test_case_convert_across_set(TestCaseConversion.STYLES)
+
+    def test_case_convert_edge_cases(self):
+        edge_cases = {
+            x: y for x, y in zip(
+                (x for x in CaseStyleEnum), [
+                    ['_', 'my_tok_', '_my_tok_', 'lots_of_words'],
+                    ['_', 'MY_TOK_', '_MY_TOK_', 'LOTS_OF_WORDS'],
+                    ['_', 'myTok_',  'My_tok_',  'lotsOfWords'],
+                    ['_', 'MyTok_',  '_MyTok',  'LotsOfWords']
+                ])
+        }
+        self._test_case_convert_across_set(edge_cases)
+        # Currently this will fail: _my_tok_ to camel case. Should give _myTok, gives My_tok_
+
+    def test_edge(self):
+        print(case_convert('int', CaseStyleEnum.MACRO_CASE))
