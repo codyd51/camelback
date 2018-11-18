@@ -2,6 +2,8 @@
 
 camelback is a Python utility to convert all identifiers in a source file between different casing styles.
 
+Inspired by [this tweet.](https://twitter.com/comex/status/1062814338182868992)
+
 The supported styles are:
 
 * `snake_case`
@@ -31,11 +33,13 @@ for filename in os.listdir(directory):
         f.write(new_contents)
 ```
 
-Requirements: 
+## Requirements: 
 
-> Anyone know a utility that can automatically change all identifiers’ case/underscore style for a whole file?  e.g. converting between FOO_BAR, fooBar, foo_bar, FooBar.
+* > Anyone know a utility that can automatically change all identifiers’ case/underscore style for a whole file?  e.g. converting between FOO_BAR, fooBar, foo_bar, FooBar.
 
-Additional requirement: You should not need to input the source file's case style, it should be automatically detected.
+* You should not need to input the source file's case style. Case style should be auto-detected.
+
+* It is allowed for input files to contain mixed case styles before transformation.
 
 
 License
