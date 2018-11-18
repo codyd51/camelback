@@ -41,7 +41,7 @@ class Lexer(object):
     def _split_stream(stream: str) -> List[str]:
         """Tokenize a raw stream.
         """
-        return re.split(r'(\s+)', stream)
+        return [x for x in re.split(r'(\s|\(|\)+)', stream) if len(x)]
 
     def match_str(self, expected: str) -> None:
         """Given a source string, tokenize it and ensure the token stream matches those tokens exactly.
