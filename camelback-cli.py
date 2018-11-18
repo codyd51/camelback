@@ -17,12 +17,12 @@ def convert_file_case(path: str, style: CaseStyleEnum) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description='Convert casing styles of files')
     parser.add_argument(
-        'input_files', type=str, nargs='+', help=
-        'One or more files whose casing style should be converted'
-    )
-    parser.add_argument(
         'case_style', type=str, help=
         'The desired casing style. Options are SNAKE_CASE, MACRO_CASE, CAMEL_CASE, PASCAL_CASE'
+    )
+    parser.add_argument(
+        'input_files', type=str, nargs='+', help=
+        'One or more files whose casing style should be converted'
     )
     args = parser.parse_args()
 
