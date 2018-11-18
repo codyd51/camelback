@@ -15,7 +15,7 @@ The supported styles are:
 
 ## As a CLI tool
 
-`$ python3 camelback-cli.py source_code.c SNAKE_CASE`
+`$ python3 camelback-cli.py SNAKE_CASE source_code.h source_code.c`
 
 ## As a library
 
