@@ -33,7 +33,7 @@ for filename in os.listdir(directory):
         f.write(new_contents)
 ```
 
-## Requirements: 
+## Requirements
 
 * > Anyone know a utility that can automatically change all identifiers’ case/underscore style for a whole file?  e.g. converting between FOO_BAR, fooBar, foo_bar, FooBar.
 
@@ -41,7 +41,6 @@ for filename in os.listdir(directory):
 
 * It is allowed for input files to contain mixed case styles before transformation.
 
+# License
 
-License
------------------
 MIT

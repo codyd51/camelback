@@ -72,6 +72,3 @@ class TestCaseConversion(unittest.TestCase):
         }
         self._test_case_convert_across_set(edge_cases)
         # Currently this will fail: _my_tok_ to camel case. Should give _myTok, gives My_tok_
-
-    def test_edge(self):
-        print(case_convert('int', CaseStyleEnum.MACRO_CASE))
