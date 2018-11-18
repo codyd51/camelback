@@ -59,69 +59,80 @@ def get_casing_style(token: str) -> CaseStyleEnum:
             return CaseStyleEnum.UNKNOWN_CASE
         if contains_lower and not contains_upper:
             return CaseStyleEnum.SNAKE_CASE
-        return CaseStyleEnum.CAMEL_CASE
+        if contains_upper and not contains_lower:
+            return CaseStyleEnum.MACRO_CASE
 
-    def _convert_tok(self, token: str, desired_style: CaseStyleEnum) -> str:
-        current_style = self.get_casing_style(token)
-        if current_style == CaseStyleEnum.UNKNOWN_CASE:
-            # if we didn't detect a known style, return the token unchanged
-            return token
-        return self.convert_style(token, current_style, desired_style)
+    if token[0].isupper():
+        return CaseStyleEnum.PASCAL_CASE
+    return CaseStyleEnum.CAMEL_CASE
 
-    @staticmethod
-    def convert_style(token: str, current_style: CaseStyleEnum, desired_style: CaseStyleEnum) -> str:
-        """Recursively transform the input string from the original style to the desired style.
-        """
-        # XXX(PT): I am sure there is a better way to write this method. Think about it more.
-        if current_style == desired_style:
-            return token
 
-        # simple cases
-        if current_style == CaseStyleEnum.SNAKE_CASE:
-            if desired_style == CaseStyleEnum.MACRO_CASE:
-                # snake -> macro, uppercase everything
-                return token.upper()
-        elif current_style == CaseStyleEnum.MACRO_CASE:
-            if desired_style == CaseStyleEnum.SNAKE_CASE:
-                # macro -> snake, lowercase everything
-                return token.lower()
-            elif desired_style == CaseStyleEnum.CAMEL_CASE:
-                # macro -> camel, convert to snake then convert to camel
-                snake_case = CaseConverter.convert_style(token, current_style, CaseStyleEnum.SNAKE_CASE)
-                return CaseConverter.convert_style(snake_case, CaseStyleEnum.SNAKE_CASE, CaseStyleEnum.CAMEL_CASE)
-        elif current_style == CaseStyleEnum.CAMEL_CASE:
-            if desired_style == CaseStyleEnum.PASCAL_CASE:
-                # camel -> pascal, uppercase first character
-                return f'{token[0].upper()}{token[1:]}'
-        elif current_style == CaseStyleEnum.PASCAL_CASE:
-            if desired_style == CaseStyleEnum.CAMEL_CASE:
-                # pascal -> camel, lowercase first character
-                return f'{token[0].lower()}{token[1:]}'
+def case_convert(token: str, desired_style: CaseStyleEnum) -> str:
+    """Convert a token to desired_style, without knowing its casing beforehand.
+    """
+    current_style = get_casing_style(token)
+    if current_style == CaseStyleEnum.UNKNOWN_CASE:
+        # if we didn't detect a known style, return the token unchanged
+        return token
+    return case_convert_to_style(token, current_style, desired_style)
 
+
+def case_convert_to_style(token: str, current_style: CaseStyleEnum, desired_style: CaseStyleEnum) -> str:
+    """Return the provided token after transforming the case from current_style to desired_style.
+    The behavior is undefined if the token is not actually in the style specified.
+    """
+    # XXX(PT): I am sure there is a better way to write this method. Think about it more.
+    if current_style == desired_style:
+        return token
+
+    # simple transformations
+    # checks for current/desired style pairs
+    if current_style == CaseStyleEnum.SNAKE_CASE:
         if desired_style == CaseStyleEnum.MACRO_CASE:
-            # in the general case, convert to macro by converting to snake then converting snake to macro
-            snake_case = CaseConverter.convert_style(token, current_style, CaseStyleEnum.SNAKE_CASE)
-            return CaseConverter.convert_style(snake_case, CaseStyleEnum.SNAKE_CASE, desired_style)
+            # snake -> macro, uppercase everything
+            return token.upper()
+    elif current_style == CaseStyleEnum.MACRO_CASE:
+        if desired_style == CaseStyleEnum.SNAKE_CASE:
+            # macro -> snake, lowercase everything
+            return token.lower()
+        elif desired_style == CaseStyleEnum.CAMEL_CASE:
+            # macro -> camel, convert to snake then convert to camel
+            snake_case = case_convert_to_style(token, current_style, CaseStyleEnum.SNAKE_CASE)
+            return case_convert_to_style(snake_case, CaseStyleEnum.SNAKE_CASE, CaseStyleEnum.CAMEL_CASE)
+    elif current_style == CaseStyleEnum.CAMEL_CASE:
         if desired_style == CaseStyleEnum.PASCAL_CASE:
-            # in the general case, convert to pascal by converting to camel then converting to pascal
-            camel_case = CaseConverter.convert_style(token, current_style, CaseStyleEnum.CAMEL_CASE)
-            return CaseConverter.convert_style(camel_case, CaseStyleEnum.CAMEL_CASE, desired_style)
-
+            # camel -> pascal, uppercase first character
+            return f'{token[0].upper()}{token[1:]}'
+    elif current_style == CaseStyleEnum.PASCAL_CASE:
         if desired_style == CaseStyleEnum.CAMEL_CASE:
-            if current_style == CaseStyleEnum.SNAKE_CASE:
-                try:
-                    underscore_loc = token.index('_')
-                except ValueError:
-                    # converted all underscores
-                    return token
-                # TODO(PT): will this break when using strings ending in underscores?
-                return f'{token[:underscore_loc]}{token[underscore_loc+1].upper()}{token[underscore_loc+2:]}'
+            # pascal -> camel, lowercase first character
+            return f'{token[0].lower()}{token[1:]}'
 
-        elif desired_style == CaseStyleEnum.SNAKE_CASE:
-            if current_style in [CaseStyleEnum.CAMEL_CASE, CaseStyleEnum.PASCAL_CASE]:
-                # split on uppercase characters
-                # this split works by inserting a space before each uppercase character, then space-splitting
-                components = re.sub(r'([A-Z])', r' \1', token).split()
-                return '_'.join(components).lower()
+    # 2-step transformations
+    if desired_style == CaseStyleEnum.MACRO_CASE:
+        # in the general case, convert to macro by converting to snake then converting snake to macro
+        snake_case = case_convert_to_style(token, current_style, CaseStyleEnum.SNAKE_CASE)
+        return case_convert_to_style(snake_case, CaseStyleEnum.SNAKE_CASE, desired_style)
+    if desired_style == CaseStyleEnum.PASCAL_CASE:
+        # in the general case, convert to pascal by converting to camel then converting to pascal
+        camel_case = case_convert_to_style(token, current_style, CaseStyleEnum.CAMEL_CASE)
+        return case_convert_to_style(camel_case, CaseStyleEnum.CAMEL_CASE, desired_style)
 
-        raise RuntimeError(f'unhandled conversion {current_style} to {desired_style}')
+    # transformations which require more logic
+    if desired_style == CaseStyleEnum.CAMEL_CASE:
+        if current_style == CaseStyleEnum.SNAKE_CASE:
+            try:
+                underscore_loc = token.index('_')
+            except ValueError:
+                # converted all underscores
+                return token
+            # TODO(PT): will this break when using strings ending in underscores?
+            return f'{token[:underscore_loc]}{token[underscore_loc+1].upper()}{token[underscore_loc+2:]}'
+    elif desired_style == CaseStyleEnum.SNAKE_CASE:
+        if current_style in [CaseStyleEnum.CAMEL_CASE, CaseStyleEnum.PASCAL_CASE]:
+            # split on uppercase characters
+            # this split works by inserting a space before each uppercase character, then space-splitting
+            components = re.sub(r'([A-Z])', r' \1', token).split()
+            return '_'.join(components).lower()
+
+    raise RuntimeError(f'unhandled conversion {current_style} to {desired_style}')
