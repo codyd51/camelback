@@ -11,36 +11,25 @@ class CaseStyleEnum(Enum):
     UNKNOWN_CASE = 4
 
 
-class CaseConverter:
-    def __init__(self, stream: str):
-        self.input_stream = stream
-        self.lexer = Lexer(stream)
+def case_convert_stream(stream: str, case_style: CaseStyleEnum) -> str:
+    """Process and return the stream, after converting every eligible token to the desired case_style.
+    """
+    lexer = Lexer(stream)
+    converted_stream = []
+    while True:
+        try:
+            tok = lexer.get()
+            current_style = get_casing_style(tok)
+            if current_style != CaseStyleEnum.UNKNOWN_CASE:
+                tok = case_convert_to_style(tok, current_style, case_style)
 
-    def convert(self, case_style: CaseStyleEnum) -> str:
-        converted_stream = []
-        while True:
-            try:
-                tok = self.lexer.get()
-                tok = self._convert_tok(tok, case_style)
-                converted_stream.append(tok)
-            except EOFError:
-                break
-        # rejoin tokens
-        return ''.join(converted_stream)
+            converted_stream.append(tok)
+        except EOFError:
+            break
+    # rejoin tokens
+    return ''.join(converted_stream)
 
-    @staticmethod
-    def snake_to_camel(token: str):
-        components = token.split('_')
-        return components[0] + ''.join(x.title() for x in components[1:])
 
-    @staticmethod
-    def get_casing_style(token: str) -> CaseStyleEnum:
-        # make sure token is long enough to have casing
-        if len(token) < 2:
-            return CaseStyleEnum.UNKNOWN_CASE
-        # make sure token is an identifier
-        if not token[0].isalpha():
-            return CaseStyleEnum.UNKNOWN_CASE
 def get_casing_style(token: str) -> CaseStyleEnum:
     """Return the case style of the provided token.
 
