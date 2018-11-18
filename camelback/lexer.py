@@ -3,11 +3,11 @@ import re
 from typing import List, Optional
 
 
-class ParseError(Exception):
+class LexingError(Exception):
     pass
 
 
-class Parser(object):
+class Lexer(object):
     """Base class for tokenizing a file and reading the token stream
     """
     def __init__(self, contents: str):
@@ -35,7 +35,7 @@ class Parser(object):
         """
         real_tok = self.get()
         if real_tok != expected:
-            raise ParseError('Expected token {}, got {}'.format(repr(expected), repr(real_tok)))
+            raise LexingError('Expected token {}, got {}'.format(repr(expected), repr(real_tok)))
 
     @staticmethod
     def _split_stream(stream: str) -> List[str]:
@@ -51,5 +51,5 @@ class Parser(object):
         for expected_tok in expected_stream:
             try:
                 self.match(expected_tok)
-            except ParseError as e:
-                raise ParseError(f'Matching string {expected_stream} failed! {str(e)}')
+            except LexingError as e:
+                raise LexingError(f'Matching string {expected_stream} failed! {str(e)}')
