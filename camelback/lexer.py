@@ -19,7 +19,7 @@ class Lexer(object):
         """Read the next token in the stream, without consuming it
         """
         if self._token_index >= len(self._tokens):
-            return None
+            raise EOFError
         return self._tokens[self._token_index]
 
     def get(self) -> str:
