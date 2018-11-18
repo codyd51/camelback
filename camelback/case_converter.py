@@ -119,20 +119,41 @@ def case_convert_to_style(token: str, current_style: CaseStyleEnum, desired_styl
         return case_convert_to_style(camel_case, CaseStyleEnum.CAMEL_CASE, desired_style)
 
     # transformations which require more logic
-    if desired_style == CaseStyleEnum.CAMEL_CASE:
-        if current_style == CaseStyleEnum.SNAKE_CASE:
-            try:
-                underscore_loc = token.index('_')
-            except ValueError:
-                # converted all underscores
-                return token
-            # TODO(PT): will this break when using strings ending in underscores?
-            return f'{token[:underscore_loc]}{token[underscore_loc+1].upper()}{token[underscore_loc+2:]}'
-    elif desired_style == CaseStyleEnum.SNAKE_CASE:
-        if current_style in [CaseStyleEnum.CAMEL_CASE, CaseStyleEnum.PASCAL_CASE]:
-            # split on uppercase characters
-            # this split works by inserting a space before each uppercase character, then space-splitting
-            components = re.sub(r'([A-Z])', r' \1', token).split()
-            return '_'.join(components).lower()
+    if current_style == CaseStyleEnum.SNAKE_CASE and desired_style == CaseStyleEnum.CAMEL_CASE:
+        return _case_convert_snake_to_camel(token)
+    if current_style in [CaseStyleEnum.CAMEL_CASE, CaseStyleEnum.PASCAL_CASE] and \
+            desired_style == CaseStyleEnum.SNAKE_CASE:
+        return _case_convert_capital_to_snake(token)
 
     raise RuntimeError(f'unhandled conversion {current_style} to {desired_style}')
+
+
+def _case_convert_snake_to_camel(token: str) -> str:
+    """Implements logic to convert a snake case token to a camel case one.
+    """
+    while True:
+        try:
+            # find next underscore
+            underscore_loc = token.index('_')
+        except ValueError:
+            # converted all underscores
+            break
+        # is the underscore at the end of the string?
+        if underscore_loc == len(token) - 1:
+            break
+
+        orig = token
+        token = f'{orig[:underscore_loc]}{orig[underscore_loc+1].upper()}'
+        # is there more after the capital?
+        if len(orig) > underscore_loc+2:
+            token += f'{orig[underscore_loc+2:]}'
+    return token
+
+
+def _case_convert_capital_to_snake(token: str) -> str:
+    """Implements logic to convert a camel or Pascal case token to a snake case one.
+    """
+    # split on uppercase characters
+    # this split works by inserting a space before each uppercase character, then space-splitting
+    components = re.sub(r'([A-Z])', r' \1', token).split()
+    return '_'.join(components).lower()
