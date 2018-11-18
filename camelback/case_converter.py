@@ -41,12 +41,34 @@ class CaseConverter:
         # make sure token is an identifier
         if not token[0].isalpha():
             return CaseStyleEnum.UNKNOWN_CASE
+def get_casing_style(token: str) -> CaseStyleEnum:
+    """Return the case style of the provided token.
 
-        if token[0].isupper():
-            if '_' in token:
-                return CaseStyleEnum.MACRO_CASE
-            return CaseStyleEnum.PASCAL_CASE
-        if '_' in token:
+    If the token does not have a definitive casing, UNKNOWN_CASE is returned.
+    """
+    # make sure token is long enough to have casing
+    if len(token) < 2:
+        return CaseStyleEnum.UNKNOWN_CASE
+    # make sure token is an identifier
+    # variables/function names typically can begin either with an alpha or underscore
+    if not token[0].isalpha() and token[0] != '_':
+        return CaseStyleEnum.UNKNOWN_CASE
+
+    # make sure token has upper or lowercase characters
+    contains_upper = any(x.isupper() for x in token)
+    contains_lower = any(x.islower() for x in token)
+    if not contains_upper and not contains_lower:
+        return CaseStyleEnum.UNKNOWN_CASE
+
+    # make sure the token either contains uppercase characters or an underscore
+    # otherwise, it doesn't have definitive casing
+    if not contains_upper and '_' not in token:
+        return CaseStyleEnum.UNKNOWN_CASE
+
+    if '_' in token:
+        if contains_upper and contains_lower:
+            return CaseStyleEnum.UNKNOWN_CASE
+        if contains_lower and not contains_upper:
             return CaseStyleEnum.SNAKE_CASE
         return CaseStyleEnum.CAMEL_CASE
 
