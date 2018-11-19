@@ -13,10 +13,8 @@ The supported options for casing styles:
 
 ## Example
 
-```bash
-$ cat code.c
 ```
-```c
+$ cat code.c
 #include <stdio.h>  // printf
 void FOO_BAR(int USER_ARGUMENT) {
     printf("%d\n", USER_ARGUMENT);
@@ -26,14 +24,10 @@ int main(int argc, char** argv) {
     FOO_BAR(MY_VARIABLE);
     return 0;
 }
-```
-```bash
 $ python3 CAMEL_CASE code.c code.h
-Converted code.c to CAMEL_CASE.
-Converted code.h to CAMEL_CASE.
+Converted code.c to CAMEL_CASE
+Converted code.h to CAMEL_CASE
 $ cat code.c
-```
-```c 
 #include <stdio.h>  // printf
 void fooBar(int userArgument) {
     printf("%d\n", userArgument);
@@ -55,16 +49,12 @@ int main(int argc, char** argv) {
 
 ```python
 import os
-from camelback.case_converter import CaseStyleEnum, case_convert_stream
+from camelback.case_converter import CaseStyleEnum, case_convert_file
 
 directory = os.path.join(os.path.dirname(__file__), 'source_code_files')
 for filename in os.listdir(directory):
     path = os.path.join(directory, filename)
-    with open(path, 'r') as f:
-        original_contents = f.read()
-    new_contents = case_convert_stream(original_contents, CaseStyleEnum.CAMEL_CASE)
-    with open(path, 'w') as f:
-        f.write(new_contents)
+    case_convert_file(path, CaseStyleEnum.CAMEL_CASE)
 ```
 
 ## Requirements
