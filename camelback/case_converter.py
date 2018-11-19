@@ -153,3 +153,19 @@ def _case_convert_capital_to_snake(token: str) -> str:
     # this split works by inserting a space before each uppercase character, then space-splitting
     components = re.sub(r'([A-Z])', r' \1', token).split()
     return '_'.join(components).lower()
+
+
+def case_convert_file_to_file(source_path: str, dest_path: str, style: CaseStyleEnum) -> None:
+    """Convenience method to duplicate a file and transform its casing style, writing it to another file.
+    """
+    with open(source_path, 'r') as f:
+        contents = f.read()
+    new_contents = case_convert_stream(contents, style)
+    with open(dest_path, 'w') as f:
+        f.write(new_contents)
+
+
+def case_convert_file(path: str, style: CaseStyleEnum) -> None:
+    """Convenience method to transform a file's casing style, overwriting it.
+    """
+    return case_convert_file_to_file(path, path, style)
