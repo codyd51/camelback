@@ -3,15 +3,7 @@ import os
 import sys
 import argparse
 
-from camelback.case_converter import CaseStyleEnum, case_convert_stream
-
-
-def convert_file_case(path: str, style: CaseStyleEnum) -> None:
-    with open(path, 'r') as f:
-        contents = f.read()
-    new_contents = case_convert_stream(contents, style)
-    with open(path, 'w') as f:
-        f.write(new_contents)
+from camelback.case_converter import CaseStyleEnum, case_convert_file
 
 
 def main() -> None:
@@ -38,11 +30,8 @@ def main() -> None:
         sys.exit(0)
 
     for input_file in args.input_files:
-        if not os.path.exists(input_file):
-            print(f'No such file: {input_file}.')
-            continue
-        convert_file_case(input_file, desired_style)
-        print(f'Converted {input_file} to {desired_style.name}.')
+        case_convert_file(input_file, desired_style)
+        print(f'Converted {input_file} to {desired_style.name}')
 
 
 if __name__ == '__main__':
