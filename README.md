@@ -4,20 +4,54 @@ camelback is a Python utility to convert all identifiers in a source file betwee
 
 Inspired by [this tweet.](https://twitter.com/comex/status/1062814338182868992)
 
-The supported styles are:
+The supported options for casing styles:
 
-* `snake_case`
-* `MACRO_CASE`
-* `camelCase`
-* `PascalCase`
+* `SNAKE_CASE`: `foo_bar`
+* `MACRO_CASE`: `FOO_BAR`
+* `CAMEL_CASE`: `fooBar`
+* `PASCAL_CASE`: `FooBar`
 
-# Usage
+## Example
 
-## As a CLI tool
+```bash
+$ cat code.c
+```
+```c
+#include <stdio.h>  // printf
+void foo_bar(int user_argument) {
+    printf("%d\n", user_argument);
+}
+int main(int argc, char** argv) {
+    int my_variable = 42;
+    foo_bar(my_variable);
+    return 0;
+}
+```
+```bash
+$ python3 CAMEL_CASE code.c code.h
+Converted code.c to CAMEL_CASE.
+Converted code.h to CAMEL_CASE.
+$ cat code.c
+```
+```c 
+#include <stdio.h>  // printf
+void fooBar(int userArgument) {
+    printf("%d\n", userArgument);
+}
+int main(int argc, char** argv) {
+    int myVariable = 42;
+    fooBar(myVariable);
+    return 0;
+}
+```
+
+## Usage
+
+### As a CLI tool
 
 `$ python3 camelback-cli.py SNAKE_CASE source_code.h source_code.c`
 
-## As a library
+### As a library
 
 ```python
 import os
@@ -41,6 +75,6 @@ for filename in os.listdir(directory):
 
 * It is allowed for input files to contain mixed case styles before transformation.
 
-# License
+## License
 
 MIT
