@@ -87,42 +87,38 @@ def case_convert_to_style(token: str, current_style: CaseStyleEnum, desired_styl
 
     # simple transformations
     # checks for current/desired style pairs
-    if current_style == CaseStyleEnum.SNAKE_CASE:
-        if desired_style == CaseStyleEnum.MACRO_CASE:
-            # snake -> macro, uppercase everything
-            return token.upper()
-    elif current_style == CaseStyleEnum.MACRO_CASE:
-        if desired_style == CaseStyleEnum.SNAKE_CASE:
-            # macro -> snake, lowercase everything
-            return token.lower()
-        elif desired_style == CaseStyleEnum.CAMEL_CASE:
-            # macro -> camel, convert to snake then convert to camel
-            snake_case = case_convert_to_style(token, current_style, CaseStyleEnum.SNAKE_CASE)
-            return case_convert_to_style(snake_case, CaseStyleEnum.SNAKE_CASE, CaseStyleEnum.CAMEL_CASE)
-    elif current_style == CaseStyleEnum.CAMEL_CASE:
-        if desired_style == CaseStyleEnum.PASCAL_CASE:
-            # camel -> pascal, uppercase first character
-            return f'{token[0].upper()}{token[1:]}'
-    elif current_style == CaseStyleEnum.PASCAL_CASE:
-        if desired_style == CaseStyleEnum.CAMEL_CASE:
-            # pascal -> camel, lowercase first character
-            return f'{token[0].lower()}{token[1:]}'
+    if current_style == CaseStyleEnum.SNAKE_CASE and desired_style == CaseStyleEnum.MACRO_CASE:
+        # snake -> macro, uppercase everything
+        return token.upper()
+    elif current_style == CaseStyleEnum.MACRO_CASE and desired_style == CaseStyleEnum.SNAKE_CASE:
+        # macro -> snake, lowercase everything
+        return token.lower()
+    elif current_style == CaseStyleEnum.CAMEL_CASE and desired_style == CaseStyleEnum.PASCAL_CASE:
+        # camel -> pascal, uppercase first character
+        return f'{token[0].upper()}{token[1:]}'
+    elif current_style == CaseStyleEnum.PASCAL_CASE and desired_style == CaseStyleEnum.CAMEL_CASE:
+        # pascal -> camel, lowercase first character
+        return f'{token[0].lower()}{token[1:]}'
 
     # 2-step transformations
-    if desired_style == CaseStyleEnum.MACRO_CASE:
-        # in the general case, convert to macro by converting to snake then converting snake to macro
+    elif desired_style == CaseStyleEnum.MACRO_CASE:
+        # any -> macro, convert to snake then convert to actual
         snake_case = case_convert_to_style(token, current_style, CaseStyleEnum.SNAKE_CASE)
         return case_convert_to_style(snake_case, CaseStyleEnum.SNAKE_CASE, desired_style)
-    if desired_style == CaseStyleEnum.PASCAL_CASE:
-        # in the general case, convert to pascal by converting to camel then converting to pascal
+    elif desired_style == CaseStyleEnum.PASCAL_CASE:
+        # any -> pascal, convert to camel then convert to pascal
         camel_case = case_convert_to_style(token, current_style, CaseStyleEnum.CAMEL_CASE)
         return case_convert_to_style(camel_case, CaseStyleEnum.CAMEL_CASE, desired_style)
+    elif current_style == CaseStyleEnum.MACRO_CASE and desired_style == CaseStyleEnum.CAMEL_CASE:
+        # macro -> camel, convert to snake then convert to camel
+        snake_case = case_convert_to_style(token, current_style, CaseStyleEnum.SNAKE_CASE)
+        return case_convert_to_style(snake_case, CaseStyleEnum.SNAKE_CASE, CaseStyleEnum.CAMEL_CASE)
 
     # transformations which require more logic
-    if current_style == CaseStyleEnum.SNAKE_CASE and desired_style == CaseStyleEnum.CAMEL_CASE:
+    elif current_style == CaseStyleEnum.SNAKE_CASE and desired_style == CaseStyleEnum.CAMEL_CASE:
         return _case_convert_snake_to_camel(token)
-    if current_style in [CaseStyleEnum.CAMEL_CASE, CaseStyleEnum.PASCAL_CASE] and \
-            desired_style == CaseStyleEnum.SNAKE_CASE:
+    elif desired_style == CaseStyleEnum.SNAKE_CASE:
+        # we know that desired_style is one of the camel-cases because an earlier branch would have been taken
         return _case_convert_capital_to_snake(token)
 
     raise RuntimeError(f'unhandled conversion {current_style} to {desired_style}')
