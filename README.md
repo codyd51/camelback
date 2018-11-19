@@ -18,12 +18,12 @@ $ cat code.c
 ```
 ```c
 #include <stdio.h>  // printf
-void foo_bar(int user_argument) {
-    printf("%d\n", user_argument);
+void FOO_BAR(int USER_ARGUMENT) {
+    printf("%d\n", USER_ARGUMENT);
 }
 int main(int argc, char** argv) {
-    int my_variable = 42;
-    foo_bar(my_variable);
+    int MY_VARIABLE = 42;
+    FOO_BAR(MY_VARIABLE);
     return 0;
 }
 ```
